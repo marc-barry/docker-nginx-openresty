@@ -1,4 +1,4 @@
-NAME := nginx-openresty
+NAME := docker-nginx-openresty
 GITCOMMIT := $(shell git rev-parse --short=10 HEAD 2>/dev/null)
 
 BASE_IMAGE_URL := $(DOCKER_ORG)/$(NAME)
