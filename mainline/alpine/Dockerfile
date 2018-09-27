@@ -1,8 +1,8 @@
 # This file is largely copied from https://github.com/nginxinc/docker-nginx/tree/master/mainline/alpine
 
-FROM alpine:3.7
+FROM alpine:3.8
 
-ENV NGINX_VERSION 1.15.3
+ENV NGINX_VERSION 1.15.4
 ENV NGX_DEVEL_KIT_VERSION 0.3.0
 ENV NGX_HTTP_LUA_MODULE_VERSION 0.10.13
 ENV LUA_CJSON_VERSION 2.1.0.6
