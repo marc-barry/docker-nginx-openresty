@@ -5,6 +5,7 @@ FROM alpine:3.8
 ENV NGINX_VERSION 1.15.4
 ENV NGX_DEVEL_KIT_VERSION 0.3.0
 ENV NGX_HTTP_LUA_MODULE_VERSION 0.10.13
+ENV NGX_STREAM_LUA_MODULE_VERSION 0.0.5
 ENV LUA_CJSON_VERSION 2.1.0.6
 ENV LUAJIT_LIB /usr/lib
 ENV LUAJIT_INC /usr/include/luajit-2.1
@@ -58,6 +59,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		--with-ld-opt="-Wl,-rpath,$LUAJIT_LIB" \
 		--add-module=/usr/src/ngx_devel_kit-$NGX_DEVEL_KIT_VERSION \
 		--add-module=/usr/src/lua-nginx-module-$NGX_HTTP_LUA_MODULE_VERSION \
+		--add-module=/usr/src/stream-lua-nginx-module-$NGX_STREAM_LUA_MODULE_VERSION \
 	" \
 	&& addgroup -S nginx \
 	&& adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
@@ -77,6 +79,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		luajit-dev \
 	&& curl -fSL https://github.com/simplresty/ngx_devel_kit/archive/v$NGX_DEVEL_KIT_VERSION.tar.gz -o ngx_devel_kit.tar.gz \
 	&& curl -fSL https://github.com/openresty/lua-nginx-module/archive/v$NGX_HTTP_LUA_MODULE_VERSION.tar.gz -o lua-nginx-module.tar.gz \
+	&& curl -fSL https://github.com/openresty/stream-lua-nginx-module/archive/v$NGX_STREAM_LUA_MODULE_VERSION.tar.gz -o stream-lua-nginx-module.tar.gz \
 	&& curl -fSL https://github.com/openresty/lua-cjson/archive/$LUA_CJSON_VERSION.tar.gz -o lua-cjson.tar.gz \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
@@ -101,6 +104,8 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& rm ngx_devel_kit.tar.gz \
 	&& tar -zxC /usr/src -f lua-nginx-module.tar.gz \
 	&& rm lua-nginx-module.tar.gz \
+	&& tar -zxC /usr/src -f stream-lua-nginx-module.tar.gz \
+	&& rm stream-lua-nginx-module.tar.gz \
 	&& tar -zxC /usr/src -f lua-cjson.tar.gz \
 	&& rm lua-cjson.tar.gz \
 	&& cd /usr/src/lua-cjson-$LUA_CJSON_VERSION \
