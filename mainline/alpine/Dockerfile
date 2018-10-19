@@ -10,10 +10,12 @@ ENV NGX_STREAM_LUA_MODULE_VERSION 0.0.5
 ENV LUA_RESTY_CORE_VERSION 0.1.15
 ENV LUA_RESTY_LRUCACHE_VERSION 0.08
 ENV LUA_CJSON_VERSION 2.1.0.6
+ENV LUA_ZLIB_VERSION 1.2.1
 ENV LUAJIT_LIB /usr/lib
 ENV LUAJIT_INC /usr/include/luajit-2.1
 ENV LUA_INCLUDE_DIR /usr/include/luajit-2.1
 ENV LUA_NGINX_LIB_DIR /etc/nginx/conf.d/lua
+ENV INCDIR -I$LUA_INCLUDE_DIR
 
 RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& CONFIG="\
@@ -82,6 +84,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		gd-dev \
 		geoip-dev \
 		luajit-dev \
+		zlib-dev \
 	&& curl -fSL https://github.com/simplresty/ngx_devel_kit/archive/v$NGX_DEVEL_KIT_VERSION.tar.gz -o ngx_devel_kit.tar.gz \
 	&& curl -fSL https://github.com/openresty/lua-nginx-module/archive/v$NGX_HTTP_LUA_MODULE_VERSION.tar.gz -o lua-nginx-module.tar.gz \
 	&& curl -fSL https://github.com/openresty/stream-lua-nginx-module/archive/v$NGX_STREAM_LUA_MODULE_VERSION.tar.gz -o stream-lua-nginx-module.tar.gz \
@@ -89,6 +92,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& curl -fSL https://github.com/openresty/lua-resty-core/archive/v$LUA_RESTY_CORE_VERSION.tar.gz -o lua-resty-core.tar.gz \
 	&& curl -fSL https://github.com/openresty/lua-resty-lrucache/archive/v$LUA_RESTY_LRUCACHE_VERSION.tar.gz -o lua-resty-lrucache.tar.gz \
 	&& curl -fSL https://github.com/openresty/lua-cjson/archive/$LUA_CJSON_VERSION.tar.gz -o lua-cjson.tar.gz \
+	&& curl -fSL https://github.com/marc-barry/lua-zlib/archive/v$LUA_ZLIB_VERSION.tar.gz -o lua-zlib.tar.gz \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
 	&& export GNUPGHOME="$(mktemp -d)" \
@@ -104,7 +108,6 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	done; \
 	test -z "$found" && echo >&2 "error: failed to fetch GPG key $GPG_KEYS" && exit 1; \
 	gpg --batch --verify nginx.tar.gz.asc nginx.tar.gz \
-	&& rm -rf "$GNUPGHOME" nginx.tar.gz.asc \
 	&& mkdir -p /usr/src \
 	&& tar -zxC /usr/src -f nginx.tar.gz \
 	&& rm nginx.tar.gz \
@@ -116,13 +119,18 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& rm stream-lua-nginx-module.tar.gz \
 	&& tar -zxC /usr/src -f njs.tar.gz \
 	&& rm njs.tar.gz \
-	&& tar -zxC /usr/src -f lua-cjson.tar.gz \
-	&& rm lua-cjson.tar.gz \
 	&& tar -zxC /usr/src -f lua-resty-core.tar.gz \
 	&& rm lua-resty-core.tar.gz \
 	&& tar -zxC /usr/src -f lua-resty-lrucache.tar.gz \
 	&& rm lua-resty-lrucache.tar.gz \
+	&& tar -zxC /usr/src -f lua-cjson.tar.gz \
+	&& rm lua-cjson.tar.gz \
+	&& tar -zxC /usr/src -f lua-zlib.tar.gz \
+	&& rm lua-zlib.tar.gz \
 	&& cd /usr/src/lua-cjson-$LUA_CJSON_VERSION \
+	&& make -j$(getconf _NPROCESSORS_ONLN) install \
+	&& cd /usr/src/lua-zlib-$LUA_ZLIB_VERSION \
+	&& make -j$(getconf _NPROCESSORS_ONLN) linux \
 	&& make -j$(getconf _NPROCESSORS_ONLN) install \
 	&& cd /usr/src/nginx-$NGINX_VERSION \
 	&& ./configure $CONFIG --with-debug \
