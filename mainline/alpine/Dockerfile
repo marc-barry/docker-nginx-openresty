@@ -1,15 +1,15 @@
 # This file is largely copied from https://github.com/nginxinc/docker-nginx/tree/master/mainline/alpine
 
-FROM alpine:3.8
+FROM alpine:3.9
 
-ENV NGINX_VERSION 1.15.7
-ENV NJS_VERSION 0.2.6
+ENV NGINX_VERSION 1.15.9
+ENV NJS_VERSION 0.2.8
 ENV NGX_DEVEL_KIT_VERSION 0.3.0
-ENV NGX_HTTP_LUA_MODULE_VERSION 0.10.13
-ENV NGX_STREAM_LUA_MODULE_VERSION 0.0.5
-ENV LUA_RESTY_CORE_VERSION 0.1.15
-ENV LUA_RESTY_LRUCACHE_VERSION 0.08
-ENV LUA_CJSON_VERSION 2.1.0.6
+ENV NGX_HTTP_LUA_MODULE_VERSION 0.10.14
+ENV NGX_STREAM_LUA_MODULE_VERSION 0.0.6
+ENV LUA_RESTY_CORE_VERSION 0.1.16
+ENV LUA_RESTY_LRUCACHE_VERSION 0.09
+ENV LUA_CJSON_VERSION 2.1.0.7
 ENV LUA_ZLIB_VERSION 1.2.1
 ENV LUAJIT_LIB /usr/lib
 ENV LUAJIT_INC /usr/include/luajit-2.1
@@ -79,7 +79,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		zlib-dev \
 		linux-headers \
 		curl \
-		gnupg \
+		gnupg1 \
 		libxslt-dev \
 		gd-dev \
 		geoip-dev \
@@ -108,6 +108,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	done; \
 	test -z "$found" && echo >&2 "error: failed to fetch GPG key $GPG_KEYS" && exit 1; \
 	gpg --batch --verify nginx.tar.gz.asc nginx.tar.gz \
+	&& rm -rf "$GNUPGHOME" nginx.tar.gz.asc \
 	&& mkdir -p /usr/src \
 	&& tar -zxC /usr/src -f nginx.tar.gz \
 	&& rm nginx.tar.gz \
