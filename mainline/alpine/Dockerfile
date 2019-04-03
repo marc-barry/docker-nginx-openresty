@@ -10,10 +10,10 @@ ENV NGX_STREAM_LUA_MODULE_VERSION 0.0.6
 ENV LUA_RESTY_CORE_VERSION 0.1.16
 ENV LUA_RESTY_LRUCACHE_VERSION 0.09
 ENV LUA_CJSON_VERSION 2.1.0.7
-ENV LUA_ZLIB_VERSION 1.2.1
+ENV LUAJIT_VERSION 2.1-20190329
 ENV LUAJIT_LIB /usr/lib
-ENV LUAJIT_INC /usr/include/luajit-2.1
-ENV LUA_INCLUDE_DIR /usr/include/luajit-2.1
+ENV LUAJIT_INC /usr/local/include/luajit-2.1
+ENV LUA_INCLUDE_DIR /usr/local/include/luajit-2.1
 ENV LUA_NGINX_LIB_DIR /etc/nginx/conf.d/lua
 ENV INCDIR -I$LUA_INCLUDE_DIR
 
@@ -76,15 +76,12 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		make \
 		openssl-dev \
 		pcre-dev \
-		zlib-dev \
 		linux-headers \
 		curl \
 		gnupg1 \
 		libxslt-dev \
 		gd-dev \
 		geoip-dev \
-		luajit-dev \
-		zlib-dev \
 	&& curl -fSL https://github.com/simplresty/ngx_devel_kit/archive/v$NGX_DEVEL_KIT_VERSION.tar.gz -o ngx_devel_kit.tar.gz \
 	&& curl -fSL https://github.com/openresty/lua-nginx-module/archive/v$NGX_HTTP_LUA_MODULE_VERSION.tar.gz -o lua-nginx-module.tar.gz \
 	&& curl -fSL https://github.com/openresty/stream-lua-nginx-module/archive/v$NGX_STREAM_LUA_MODULE_VERSION.tar.gz -o stream-lua-nginx-module.tar.gz \
@@ -92,9 +89,9 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& curl -fSL https://github.com/openresty/lua-resty-core/archive/v$LUA_RESTY_CORE_VERSION.tar.gz -o lua-resty-core.tar.gz \
 	&& curl -fSL https://github.com/openresty/lua-resty-lrucache/archive/v$LUA_RESTY_LRUCACHE_VERSION.tar.gz -o lua-resty-lrucache.tar.gz \
 	&& curl -fSL https://github.com/openresty/lua-cjson/archive/$LUA_CJSON_VERSION.tar.gz -o lua-cjson.tar.gz \
-	&& curl -fSL https://github.com/marc-barry/lua-zlib/archive/v$LUA_ZLIB_VERSION.tar.gz -o lua-zlib.tar.gz \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
+	&& curl -fSL https://github.com/openresty/luajit2/archive/v$LUAJIT_VERSION.tar.gz -o luajit.tar.gz \
 	&& export GNUPGHOME="$(mktemp -d)" \
 	&& found=''; \
 	for server in \
@@ -112,6 +109,8 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& mkdir -p /usr/src \
 	&& tar -zxC /usr/src -f nginx.tar.gz \
 	&& rm nginx.tar.gz \
+	&& tar -zxC /usr/src -f luajit.tar.gz \
+	&& rm luajit.tar.gz \
 	&& tar -zxC /usr/src -f ngx_devel_kit.tar.gz \
 	&& rm ngx_devel_kit.tar.gz \
 	&& tar -zxC /usr/src -f lua-nginx-module.tar.gz \
@@ -126,12 +125,9 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& rm lua-resty-lrucache.tar.gz \
 	&& tar -zxC /usr/src -f lua-cjson.tar.gz \
 	&& rm lua-cjson.tar.gz \
-	&& tar -zxC /usr/src -f lua-zlib.tar.gz \
-	&& rm lua-zlib.tar.gz \
+	&& cd /usr/src/luajit2-$LUAJIT_VERSION \
+	&& make -j$(getconf _NPROCESSORS_ONLN) install \ 
 	&& cd /usr/src/lua-cjson-$LUA_CJSON_VERSION \
-	&& make -j$(getconf _NPROCESSORS_ONLN) install \
-	&& cd /usr/src/lua-zlib-$LUA_ZLIB_VERSION \
-	&& make -j$(getconf _NPROCESSORS_ONLN) linux \
 	&& make -j$(getconf _NPROCESSORS_ONLN) install \
 	&& cd /usr/src/nginx-$NGINX_VERSION \
 	&& ./configure $CONFIG --with-debug \
@@ -176,6 +172,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
 	)" \
 	&& apk add --no-cache --virtual .nginx-rundeps $runDeps \
+	&& apk add --no-cache libgcc \
 	&& apk del .build-deps \
 	&& apk del .gettext \
 	&& mv /tmp/envsubst /usr/local/bin/ \
@@ -186,8 +183,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	\
 	# forward request and error logs to docker log collector
 	&& ln -sf /dev/stdout /var/log/nginx/access.log \
-	&& ln -sf /dev/stderr /var/log/nginx/error.log \
-	&& apk add --no-cache luajit
+	&& ln -sf /dev/stderr /var/log/nginx/error.log
 
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY nginx.vh.default.conf /etc/nginx/conf.d/default.conf

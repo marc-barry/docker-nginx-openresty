@@ -1,3 +1,4 @@
+DOCKER_ORG := middlenamesfirst
 NAME := docker-nginx-openresty
 GITCOMMIT := $(shell git rev-parse --short=10 HEAD 2>/dev/null)
 
