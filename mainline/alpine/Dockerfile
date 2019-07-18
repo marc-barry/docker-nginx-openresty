@@ -1,6 +1,6 @@
 # This file is largely copied from https://github.com/nginxinc/docker-nginx/tree/master/mainline/alpine
 
-FROM alpine:3.9.2
+FROM alpine:3.10.1@sha256:6a92cd1fcdc8d8cdec60f33dda4db2cb1fcdcacf3410a8e05b3741f44a9b5998
 
 ENV NGINX_VERSION 1.15.11
 ENV NJS_VERSION 0.3.0
