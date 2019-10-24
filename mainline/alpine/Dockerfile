@@ -2,8 +2,8 @@
 
 FROM alpine:3.10.2@sha256:72c42ed48c3a2db31b7dafe17d275b634664a708d901ec9fd57b1529280f01fb
 
-ENV NGINX_VERSION 1.17.4
-ENV NJS_VERSION 0.3.5
+ENV NGINX_VERSION 1.17.5
+ENV NJS_VERSION 0.3.6
 ENV NGX_DEVEL_KIT_VERSION 0.3.1
 ENV NGX_HTTP_LUA_MODULE_VERSION 0.10.15
 ENV NGX_STREAM_LUA_MODULE_VERSION 0.0.7
@@ -82,6 +82,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		libxslt-dev \
 		gd-dev \
 		geoip-dev \
+		gettext-dev \
 	&& curl -fSL https://github.com/simplresty/ngx_devel_kit/archive/v$NGX_DEVEL_KIT_VERSION.tar.gz -o ngx_devel_kit.tar.gz \
 	&& curl -fSL https://github.com/openresty/lua-nginx-module/archive/v$NGX_HTTP_LUA_MODULE_VERSION.tar.gz -o lua-nginx-module.tar.gz \
 	&& curl -fSL https://github.com/openresty/stream-lua-nginx-module/archive/v$NGX_STREAM_LUA_MODULE_VERSION.tar.gz -o stream-lua-nginx-module.tar.gz \
